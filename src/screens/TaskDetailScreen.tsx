@@ -4,9 +4,19 @@ import { Header } from '../components/layout/Header'
 import { TaskForm } from '../components/tasks/TaskForm'
 import { useTasks } from '../hooks/useTasks'
 import { useVoiceOutput } from '../hooks/useVoiceOutput'
-import { CATEGORIES, IMPORTANCE_CONFIG } from '../types'
-import type { Task } from '../types'
+import { CATEGORIES, IMPORTANCE_CONFIG, CATEGORY_COLORS } from '../types'
+import type { Task, CategoryId } from '../types'
 import type { TaskDraft } from './AddTaskScreen'
+import {
+  IconVolume, IconVolumeOff, IconCheck, IconUndo, IconTrash,
+  IconEdit, IconX, IconClock, IconCalendar, IconGrape, IconHome,
+} from '../components/ui/Icons'
+
+const CATEGORY_ICONS: Record<CategoryId, typeof IconGrape> = {
+  vineyard: IconGrape,
+  personal: IconHome,
+  scheduling: IconCalendar,
+}
 
 export function TaskDetailScreen() {
   const { id } = useParams<{ id: string }>()
@@ -17,7 +27,6 @@ export function TaskDetailScreen() {
   const [showDelete, setShowDelete] = useState(false)
 
   const task = tasks.find(t => t.id === id)
-
   const [draft, setDraft] = useState<TaskDraft | null>(null)
 
   useEffect(() => {
@@ -36,7 +45,11 @@ export function TaskDetailScreen() {
   }, [task, draft])
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full"><p className="text-vine-400">Loading...</p></div>
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="w-6 h-6 border-2 border-vine-300 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   if (!task || !draft) {
@@ -44,7 +57,7 @@ export function TaskDetailScreen() {
       <div className="min-h-full">
         <Header title="Task" showBack />
         <div className="flex items-center justify-center h-64">
-          <p className="text-vine-400">Task not found.</p>
+          <p className="text-vine-400 text-sm">Task not found.</p>
         </div>
       </div>
     )
@@ -77,107 +90,136 @@ export function TaskDetailScreen() {
 
   const cat = CATEGORIES.find(c => c.id === task.category)
   const imp = IMPORTANCE_CONFIG[task.importance]
+  const CatIcon = CATEGORY_ICONS[task.category]
 
   return (
-    <div className="min-h-full bg-vine-50">
+    <div className="min-h-full">
       <Header
         title="Task Details"
         showBack
         rightAction={
           <button
             onClick={() => setEditing(!editing)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium text-vine-600 hover:bg-vine-100"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-vine-100 text-vine-500"
           >
-            {editing ? 'Cancel' : 'Edit'}
+            {editing ? <IconX size={18} /> : <IconEdit size={18} />}
           </button>
         }
       />
 
       {editing ? (
-        <div className="px-4 py-4">
+        <div className="px-5 py-5">
           <TaskForm draft={draft} onChange={setDraft} />
           <button
             onClick={handleSave}
-            className="w-full mt-4 py-4 rounded-xl bg-vine-600 text-white font-bold text-lg active:bg-vine-700"
+            className="w-full mt-6 py-4 rounded-xl bg-vine-700 text-white font-semibold text-base flex items-center justify-center gap-2 active:bg-vine-800 shadow-sm"
           >
+            <IconCheck size={18} strokeWidth={3} />
             Save Changes
           </button>
         </div>
       ) : (
-        <div className="px-4 py-4 space-y-4">
-          <div className="bg-white rounded-2xl p-4 border border-vine-100">
-            <div className="flex items-start justify-between mb-3">
-              <h2 className="text-xl font-bold text-vine-700 flex-1">{task.title}</h2>
-              <span
-                className="ml-2 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-                style={{ backgroundColor: imp.color }}
-              >
-                {imp.label}
-              </span>
+        <div className="px-5 py-5 space-y-4 animate-fade-in">
+          {/* Task card */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-start justify-between mb-4">
+              <h2 className="text-xl font-bold text-vine-800 flex-1 leading-tight">{task.title}</h2>
+              <div className="flex items-center gap-1.5 ml-3 flex-shrink-0">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: imp.color }} />
+                <span className="text-xs font-semibold text-vine-500">{imp.label}</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-lg">{cat?.icon}</span>
-              <span className="text-sm text-vine-500">{cat?.label}</span>
-              <span className="text-vine-300">·</span>
-              <span className="text-sm text-vine-500">{formatDate(task.dueDate)}</span>
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-6 h-6 rounded-md flex items-center justify-center"
+                  style={{ backgroundColor: CATEGORY_COLORS[task.category] + '18' }}
+                >
+                  <CatIcon size={13} className="text-vine-500" />
+                </div>
+                <span className="text-sm text-vine-500">{cat?.label}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-vine-400">
+                <IconCalendar size={13} />
+                <span className="text-sm">{formatDate(task.dueDate)}</span>
+              </div>
               {task.dueTime && (
-                <>
-                  <span className="text-vine-300">·</span>
-                  <span className="text-sm text-vine-500">{formatTime(task.dueTime)}</span>
-                </>
+                <div className="flex items-center gap-1.5 text-vine-400">
+                  <IconClock size={13} />
+                  <span className="text-sm">{formatTime(task.dueTime)}</span>
+                </div>
               )}
             </div>
 
             {task.notes && (
-              <p className="text-vine-500 text-sm bg-vine-50 rounded-xl p-3">{task.notes}</p>
+              <div className="bg-vine-50/80 rounded-xl p-3.5 mb-4">
+                <p className="text-vine-500 text-sm leading-relaxed">{task.notes}</p>
+              </div>
             )}
 
-            <p className="text-xs text-vine-300 mt-3">
+            <p className="text-[11px] text-vine-300">
               Created {new Date(task.createdAt).toLocaleDateString()} via {task.createdVia}
             </p>
           </div>
 
+          {/* Action buttons */}
           <button
             onClick={readAloud}
-            className="w-full py-3 rounded-xl bg-vine-100 text-vine-600 font-medium text-base active:bg-vine-200"
+            className="w-full py-3.5 rounded-xl bg-white border border-vine-200 text-vine-600 font-medium text-sm flex items-center justify-center gap-2.5 active:bg-vine-50 hover:border-vine-300"
           >
-            {isSpeaking ? '⏹ Stop' : '🔊 Read Aloud'}
+            {isSpeaking ? <IconVolumeOff size={18} /> : <IconVolume size={18} />}
+            {isSpeaking ? 'Stop Reading' : 'Read Aloud'}
           </button>
 
           <button
             onClick={handleComplete}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
+            className={`w-full py-4 rounded-xl font-semibold text-base flex items-center justify-center gap-2.5 transition-all shadow-sm ${
               task.status === 'completed'
-                ? 'bg-vine-200 text-vine-600 active:bg-vine-300'
+                ? 'bg-vine-100 text-vine-600 active:bg-vine-200'
                 : 'bg-green-600 text-white active:bg-green-700'
             }`}
           >
-            {task.status === 'completed' ? '↩ Mark Incomplete' : '✓ Mark Complete'}
+            {task.status === 'completed' ? (
+              <>
+                <IconUndo size={18} />
+                Mark Incomplete
+              </>
+            ) : (
+              <>
+                <IconCheck size={18} strokeWidth={3} />
+                Mark Complete
+              </>
+            )}
           </button>
 
           <button
             onClick={() => setShowDelete(true)}
-            className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-medium text-base active:bg-red-100"
+            className="w-full py-3.5 rounded-xl bg-white border border-red-100 text-red-500 font-medium text-sm flex items-center justify-center gap-2 active:bg-red-50 hover:border-red-200"
           >
+            <IconTrash size={16} />
             Delete Task
           </button>
 
+          {/* Delete modal */}
           {showDelete && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
-                <p className="text-lg font-bold text-vine-700 mb-2">Delete this task?</p>
-                <p className="text-vine-500 mb-6">"{task.title}" will be permanently removed.</p>
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-fade-in">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-slide-up">
+                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                  <IconTrash size={20} className="text-red-500" />
+                </div>
+                <p className="text-lg font-bold text-vine-800 text-center mb-1">Delete this task?</p>
+                <p className="text-vine-400 text-sm text-center mb-6">"{task.title}" will be permanently removed.</p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowDelete(false)}
-                    className="flex-1 py-3 rounded-xl bg-vine-100 text-vine-600 font-medium"
+                    className="flex-1 py-3 rounded-xl bg-vine-100 text-vine-600 font-medium active:bg-vine-200"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDelete}
-                    className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold"
+                    className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold active:bg-red-700"
                   >
                     Delete
                   </button>

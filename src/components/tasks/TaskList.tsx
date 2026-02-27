@@ -1,4 +1,5 @@
 import { TaskCard } from './TaskCard'
+import { IconGrape } from '../ui/Icons'
 import type { Task } from '../../types'
 
 interface TaskListProps {
@@ -11,9 +12,11 @@ interface TaskListProps {
 export function TaskList({ tasks, onComplete, onUncomplete, emptyMessage }: TaskListProps) {
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4">
-        <span className="text-5xl mb-4">🍇</span>
-        <p className="text-vine-400 text-center text-base">
+      <div className="flex flex-col items-center justify-center py-20 px-6">
+        <div className="w-16 h-16 rounded-full bg-vine-100 flex items-center justify-center mb-4">
+          <IconGrape size={28} className="text-vine-400" />
+        </div>
+        <p className="text-vine-400 text-center text-sm leading-relaxed">
           {emptyMessage || 'No tasks yet.'}
         </p>
       </div>
@@ -25,7 +28,7 @@ export function TaskList({ tasks, onComplete, onUncomplete, emptyMessage }: Task
   const completed = tasks.filter(t => t.status === 'completed')
 
   return (
-    <div className="px-4 space-y-3 pb-4">
+    <div className="px-4 space-y-4 pb-4">
       {overdue.length > 0 && (
         <Section label="Overdue" tasks={overdue} onComplete={onComplete} onUncomplete={onUncomplete} />
       )}
@@ -47,7 +50,7 @@ function Section({ label, tasks, onComplete, onUncomplete }: {
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-vine-400 uppercase tracking-wider mb-2">{label}</p>
+      <p className="text-[11px] font-semibold text-vine-400 uppercase tracking-widest mb-2 px-1">{label}</p>
       <div className="space-y-2">
         {tasks.map(task => (
           <TaskCard key={task.id} task={task} onComplete={onComplete} onUncomplete={onUncomplete} />

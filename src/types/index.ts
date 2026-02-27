@@ -11,8 +11,8 @@ export interface Task {
   category: CategoryId
   importance: Importance
   status: TaskStatus
-  dueDate: string        // ISO date: "2026-03-15"
-  dueTime: string | null // "09:00" (24h)
+  dueDate: string
+  dueTime: string | null
   reminderMinutesBefore: number
   createdAt: string
   completedAt: string | null
@@ -22,14 +22,13 @@ export interface Task {
 export interface Category {
   id: CategoryId
   label: string
-  icon: string
   color: string
 }
 
 export const CATEGORIES: Category[] = [
-  { id: 'vineyard', label: 'Vineyard', icon: '🍇', color: 'emerald' },
-  { id: 'personal', label: 'Personal', icon: '🏠', color: 'amber' },
-  { id: 'scheduling', label: 'Appointments', icon: '📅', color: 'sky' },
+  { id: 'vineyard', label: 'Vineyard', color: 'emerald' },
+  { id: 'personal', label: 'Personal', color: 'amber' },
+  { id: 'scheduling', label: 'Appointments', color: 'sky' },
 ]
 
 export const IMPORTANCE_CONFIG: Record<Importance, {

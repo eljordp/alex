@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/layout/Header'
 import { TaskList } from '../components/tasks/TaskList'
 import { VoiceButton } from '../components/voice/VoiceButton'
 import { useTasks } from '../hooks/useTasks'
 import { useVoiceOutput } from '../hooks/useVoiceOutput'
+import { IconVolume, IconVolumeOff, IconAlertTriangle, IconSun } from '../components/ui/Icons'
 
 function getGreeting(): string {
   const hour = new Date().getHours()
@@ -15,8 +15,9 @@ function getGreeting(): string {
 export function HomeScreen() {
   const { todayTasks, overdueTasks, loading, complete, uncomplete } = useTasks()
   const { speak, isSpeaking, stop } = useVoiceOutput()
-  const navigate = useNavigate()
   const name = localStorage.getItem('vinatask-name') || ''
+
+  const pendingCount = todayTasks.filter(t => t.status !== 'completed').length
 
   const readTasks = () => {
     if (isSpeaking) { stop(); return }
@@ -34,51 +35,65 @@ export function HomeScreen() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-vine-400 text-lg">Loading...</div>
+        <div className="w-6 h-6 border-2 border-vine-300 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
     <div className="min-h-full">
-      <Header
-        title="VinaTask"
-        rightAction={
-          <button
-            onClick={() => navigate('/settings')}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-vine-100 text-xl"
-          >
-            ⚙️
-          </button>
-        }
-      />
+      <Header title="VinaTask" />
 
-      <div className="px-4 pt-4 pb-2">
-        <p className="text-vine-500 text-lg">
-          {getGreeting()}{name ? `, ${name}` : ''}.
-        </p>
-        <p className="text-vine-400 text-sm mt-1">
-          {todayTasks.filter(t => t.status !== 'completed').length === 0
-            ? 'No tasks for today!'
-            : `You have ${todayTasks.filter(t => t.status !== 'completed').length} task${todayTasks.filter(t => t.status !== 'completed').length > 1 ? 's' : ''} today.`
+      {/* Greeting section */}
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center gap-2 mb-1">
+          <IconSun size={18} className="text-vine-300" />
+          <p className="text-vine-500 text-base font-medium">
+            {getGreeting()}{name ? `, ${name}` : ''}.
+          </p>
+        </div>
+        <p className="text-vine-400 text-sm pl-7">
+          {pendingCount === 0
+            ? 'No tasks for today. Enjoy your day!'
+            : `${pendingCount} task${pendingCount > 1 ? 's' : ''} on your plate today.`
           }
         </p>
       </div>
 
+      {/* Overdue banner */}
       {overdueTasks.length > 0 && (
-        <div className="mx-4 mb-3 p-3 bg-red-50 border border-red-200 rounded-xl">
-          <p className="text-red-700 font-semibold text-sm">
-            ⚠️ {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}
-          </p>
+        <div className="mx-4 mb-3 p-3.5 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+            <IconAlertTriangle size={16} className="text-red-500" />
+          </div>
+          <div>
+            <p className="text-red-700 font-semibold text-sm">
+              {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}
+            </p>
+            <p className="text-red-400 text-xs">
+              These need your attention
+            </p>
+          </div>
         </div>
       )}
 
-      <div className="px-4 mb-3">
+      {/* Read tasks button */}
+      <div className="px-4 mb-4">
         <button
           onClick={readTasks}
-          className="w-full py-3 rounded-xl bg-vine-100 text-vine-600 font-medium text-base active:bg-vine-200 transition-colors"
+          className="w-full py-3 rounded-xl bg-white border border-vine-200 text-vine-600 font-medium text-sm flex items-center justify-center gap-2.5 active:bg-vine-50 transition-all hover:border-vine-300"
         >
-          {isSpeaking ? '⏹ Stop Reading' : '🔊 Read My Tasks'}
+          {isSpeaking ? (
+            <>
+              <IconVolumeOff size={18} />
+              Stop Reading
+            </>
+          ) : (
+            <>
+              <IconVolume size={18} />
+              Read My Tasks
+            </>
+          )}
         </button>
       </div>
 

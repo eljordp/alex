@@ -5,6 +5,7 @@ import { TaskForm } from '../components/tasks/TaskForm'
 import { QuickAdd } from '../components/tasks/QuickAdd'
 import { useTasks } from '../hooks/useTasks'
 import { useVoiceOutput } from '../hooks/useVoiceOutput'
+import { IconCheck } from '../components/ui/Icons'
 import type { CategoryId, Importance } from '../types'
 
 export interface TaskDraft {
@@ -52,22 +53,23 @@ export function AddTaskScreen() {
   }
 
   return (
-    <div className="min-h-full bg-vine-50">
+    <div className="min-h-full">
       <Header title="New Task" showBack />
 
-      <div className="px-4 py-4">
+      <div className="px-5 py-5">
         <TaskForm draft={draft} onChange={setDraft} />
 
         <button
           onClick={handleSave}
           disabled={!draft.title.trim() || saving}
-          className="w-full mt-6 py-4 rounded-xl bg-green-600 text-white font-bold text-lg active:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-8 py-4 rounded-xl bg-green-600 text-white font-semibold text-base flex items-center justify-center gap-2 active:bg-green-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
         >
-          {saving ? 'Saving...' : '✓ Save Task'}
+          <IconCheck size={18} strokeWidth={3} />
+          {saving ? 'Saving...' : 'Save Task'}
         </button>
 
-        <div className="mt-8">
-          <p className="text-vine-400 text-sm font-medium mb-3">Quick Add Templates</p>
+        <div className="mt-10">
+          <p className="text-xs font-semibold text-vine-400 uppercase tracking-widest mb-3">Quick Add</p>
           <QuickAdd onSelect={handleQuickAdd} />
         </div>
       </div>

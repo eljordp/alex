@@ -1,9 +1,10 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import { IconHome, IconList, IconSettings } from '../ui/Icons'
 
 const tabs = [
-  { to: '/', label: 'Today', icon: '🏠' },
-  { to: '/tasks', label: 'All Tasks', icon: '📋' },
-  { to: '/settings', label: 'Settings', icon: '⚙️' },
+  { to: '/', label: 'Today', Icon: IconHome },
+  { to: '/tasks', label: 'All Tasks', Icon: IconList },
+  { to: '/settings', label: 'Settings', Icon: IconSettings },
 ]
 
 export function AppShell() {
@@ -17,22 +18,28 @@ export function AppShell() {
       </main>
 
       {!hideNav && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-vine-200 pb-[env(safe-area-inset-bottom)]">
-          <div className="flex justify-around items-center h-16">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-vine-200/60 pb-[env(safe-area-inset-bottom)] z-30">
+          <div className="flex justify-around items-center h-14 max-w-lg mx-auto">
             {tabs.map(tab => (
               <NavLink
                 key={tab.to}
                 to={tab.to}
                 className={({ isActive }) =>
-                  `flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg transition-colors ${
+                  `flex flex-col items-center gap-0.5 px-5 py-1.5 rounded-xl transition-all ${
                     isActive
-                      ? 'text-vine-600 font-semibold'
-                      : 'text-vine-400'
+                      ? 'text-vine-700'
+                      : 'text-vine-400 hover:text-vine-500'
                   }`
                 }
               >
-                <span className="text-2xl">{tab.icon}</span>
-                <span className="text-xs">{tab.label}</span>
+                {({ isActive }) => (
+                  <>
+                    <tab.Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                    <span className={`text-[10px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                      {tab.label}
+                    </span>
+                  </>
+                )}
               </NavLink>
             ))}
           </div>

@@ -1,4 +1,8 @@
 import type { TaskDraft } from '../../screens/AddTaskScreen'
+import {
+  IconDroplet, IconFlask, IconWrench, IconGrape,
+  IconMedical, IconPhone, IconUsers, IconShoppingCart,
+} from '../ui/Icons'
 
 interface QuickAddProps {
   onSelect: (template: TaskDraft) => void
@@ -6,45 +10,45 @@ interface QuickAddProps {
 
 const today = () => new Date().toISOString().split('T')[0]
 
-const TEMPLATES: { label: string; icon: string; draft: Partial<TaskDraft> }[] = [
+const TEMPLATES: { label: string; Icon: typeof IconDroplet; draft: Partial<TaskDraft> }[] = [
   {
     label: 'Water Vines',
-    icon: '💧',
+    Icon: IconDroplet,
     draft: { title: 'Water vines', category: 'vineyard', importance: 'high' },
   },
   {
     label: 'Spray Program',
-    icon: '🧪',
+    Icon: IconFlask,
     draft: { title: 'Spray program', category: 'vineyard', importance: 'critical' },
   },
   {
     label: 'Check Irrigation',
-    icon: '🔧',
+    Icon: IconWrench,
     draft: { title: 'Check irrigation', category: 'vineyard', importance: 'high' },
   },
   {
     label: 'Harvest Prep',
-    icon: '🍇',
+    Icon: IconGrape,
     draft: { title: 'Harvest prep', category: 'vineyard', importance: 'critical' },
   },
   {
     label: 'Doctor Appt',
-    icon: '🏥',
+    Icon: IconMedical,
     draft: { title: 'Doctor appointment', category: 'scheduling', importance: 'high' },
   },
   {
     label: 'Call Back',
-    icon: '📞',
+    Icon: IconPhone,
     draft: { title: 'Return phone call', category: 'scheduling', importance: 'medium' },
   },
   {
     label: 'Meeting',
-    icon: '🤝',
+    Icon: IconUsers,
     draft: { title: 'Meeting', category: 'scheduling', importance: 'high' },
   },
   {
     label: 'Groceries',
-    icon: '🛒',
+    Icon: IconShoppingCart,
     draft: { title: 'Get groceries', category: 'personal', importance: 'medium' },
   },
 ]
@@ -69,9 +73,11 @@ export function QuickAdd({ onSelect }: QuickAddProps) {
         <button
           key={t.label}
           onClick={() => handleSelect(t)}
-          className="flex items-center gap-2 p-3 bg-white border border-vine-200 rounded-xl text-left active:bg-vine-100 transition-colors"
+          className="flex items-center gap-3 p-3.5 bg-white border border-vine-100 rounded-xl text-left active:bg-vine-50 transition-all hover:border-vine-200 hover:shadow-sm"
         >
-          <span className="text-xl">{t.icon}</span>
+          <div className="w-8 h-8 rounded-lg bg-vine-50 flex items-center justify-center flex-shrink-0">
+            <t.Icon size={16} className="text-vine-500" />
+          </div>
           <span className="text-sm font-medium text-vine-600">{t.label}</span>
         </button>
       ))}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { CATEGORIES, IMPORTANCE_CONFIG, CATEGORY_COLORS } from '../../types'
 import type { Task } from '../../types'
+import { IconCheck, IconClock, IconAlertTriangle } from '../ui/Icons'
 
 interface TaskCardProps {
   task: Task
@@ -27,56 +28,67 @@ export function TaskCard({ task, onComplete, onUncomplete }: TaskCardProps) {
   return (
     <div
       onClick={() => navigate(`/task/${task.id}`)}
-      className={`relative flex items-center gap-3 p-4 bg-white rounded-xl border transition-all active:scale-[0.98] ${
-        isOverdue ? 'border-red-200 bg-red-50/50' : 'border-vine-100'
-      } ${isCompleted ? 'opacity-60' : ''}`}
+      className={`relative flex items-center gap-3 p-4 rounded-2xl transition-all active:scale-[0.98] shadow-sm ${
+        isOverdue
+          ? 'bg-red-50 border border-red-100'
+          : 'bg-white border border-transparent'
+      } ${isCompleted ? 'opacity-50' : ''}`}
     >
       {/* Importance stripe */}
       <div
-        className="absolute left-0 top-3 bottom-3 w-1 rounded-full"
+        className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full"
         style={{ backgroundColor: imp.color }}
       />
 
       {/* Checkbox */}
       <button
         onClick={handleCheck}
-        className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-2 ${
+        className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 ml-1.5 transition-all ${
           isCompleted
-            ? 'bg-green-500 border-green-500 text-white'
-            : 'border-vine-300'
+            ? 'bg-green-500 border-green-500'
+            : `border-vine-300 hover:border-vine-400`
         }`}
       >
-        {isCompleted && <span className="text-sm">✓</span>}
+        {isCompleted && <IconCheck size={14} className="text-white" strokeWidth={3} />}
       </button>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className={`font-semibold text-base ${isCompleted ? 'line-through text-vine-400' : 'text-vine-700'}`}>
+        <p className={`font-semibold text-[15px] leading-tight ${isCompleted ? 'line-through text-vine-400' : 'text-vine-700'}`}>
           {task.title}
         </p>
-        <div className="flex items-center gap-1.5 mt-1">
+        <div className="flex items-center gap-2 mt-1.5">
           <span
-            className="text-xs px-1.5 py-0.5 rounded-md font-medium text-white"
+            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md font-medium text-white"
             style={{ backgroundColor: CATEGORY_COLORS[task.category] }}
           >
-            {cat?.icon} {cat?.label}
+            {cat?.label}
           </span>
           {task.dueTime && (
-            <span className="text-xs text-vine-400">{formatTime(task.dueTime)}</span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-vine-400">
+              <IconClock size={11} />
+              {formatTime(task.dueTime)}
+            </span>
           )}
           {isOverdue && (
-            <span className="text-xs text-red-600 font-semibold">Overdue!</span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-red-500 font-semibold">
+              <IconAlertTriangle size={11} />
+              Overdue
+            </span>
           )}
         </div>
       </div>
 
-      {/* Importance badge */}
-      <span
-        className="text-xs px-2 py-1 rounded-full font-bold text-white flex-shrink-0"
-        style={{ backgroundColor: imp.color }}
-      >
-        {imp.label}
-      </span>
+      {/* Importance dot */}
+      <div className="flex flex-col items-center gap-1 flex-shrink-0">
+        <div
+          className="w-2.5 h-2.5 rounded-full"
+          style={{ backgroundColor: imp.color }}
+        />
+        <span className="text-[9px] font-semibold text-vine-400 uppercase tracking-wide">
+          {imp.label}
+        </span>
+      </div>
     </div>
   )
 }

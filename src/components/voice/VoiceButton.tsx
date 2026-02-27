@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useVoiceInput } from '../../hooks/useVoiceInput'
 import { parseVoiceInput } from '../../lib/parser'
+import { IconMic, IconStop, IconX, IconCheck } from '../ui/Icons'
 
 export function VoiceButton() {
   const navigate = useNavigate()
@@ -22,7 +23,6 @@ export function VoiceButton() {
     },
     onError: () => {
       setShowOverlay(false)
-      // Fallback to manual add
       navigate('/add')
     },
   })
@@ -47,10 +47,10 @@ export function VoiceButton() {
       <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-20 pb-[env(safe-area-inset-bottom)]">
         <button
           onClick={handleTap}
-          className={`relative w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl shadow-lg transition-transform active:scale-95 ${
+          className={`relative w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-95 ${
             isListening
-              ? 'bg-red-500'
-              : 'bg-vine-600'
+              ? 'bg-red-500 shadow-red-200'
+              : 'bg-vine-700 shadow-vine-300/40 hover:bg-vine-800'
           }`}
         >
           {isListening && (
@@ -59,37 +59,56 @@ export function VoiceButton() {
               style={{ animation: 'pulse-ring 1.5s ease-out infinite' }}
             />
           )}
-          <span className="relative z-10">{isListening ? '⏹' : '🎤'}</span>
+          <span className="relative z-10">
+            {isListening ? <IconStop size={20} /> : <IconMic size={22} />}
+          </span>
         </button>
       </div>
 
       {/* Voice overlay */}
       {showOverlay && (
-        <div className="fixed inset-0 bg-black/60 flex flex-col items-center justify-center z-30 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center">
-            <div className="mb-4">
-              <span className="text-4xl">{isListening ? '🎤' : '⏳'}</span>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center z-30 p-6 animate-fade-in">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl animate-slide-up">
+            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
+              {isListening ? (
+                <div className="relative">
+                  <IconMic size={28} className="text-red-500" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                </div>
+              ) : (
+                <div className="w-5 h-5 border-2 border-vine-400 border-t-transparent rounded-full animate-spin" />
+              )}
             </div>
-            <p className="text-vine-700 font-bold text-lg mb-2">
+
+            <p className="text-vine-800 font-bold text-lg mb-1">
               {isListening ? 'Listening...' : 'Processing...'}
             </p>
+            <p className="text-vine-400 text-sm mb-5">
+              {isListening ? 'Speak naturally about your task' : 'Understanding your request'}
+            </p>
+
             {transcript && (
-              <p className="text-vine-500 text-base mb-4 italic">
-                "{transcript}"
-              </p>
+              <div className="bg-vine-50 rounded-xl p-4 mb-5">
+                <p className="text-vine-600 text-sm italic leading-relaxed">
+                  "{transcript}"
+                </p>
+              </div>
             )}
+
             <div className="flex gap-3">
               <button
                 onClick={() => { stop(); setShowOverlay(false) }}
-                className="flex-1 py-3 rounded-xl bg-vine-100 text-vine-600 font-medium"
+                className="flex-1 py-3 rounded-xl bg-vine-100 text-vine-600 font-medium flex items-center justify-center gap-2 active:bg-vine-200"
               >
+                <IconX size={16} />
                 Cancel
               </button>
               {transcript && (
                 <button
                   onClick={() => { stop() }}
-                  className="flex-1 py-3 rounded-xl bg-vine-600 text-white font-medium"
+                  className="flex-1 py-3 rounded-xl bg-vine-700 text-white font-medium flex items-center justify-center gap-2 active:bg-vine-800"
                 >
+                  <IconCheck size={16} />
                   Done
                 </button>
               )}
