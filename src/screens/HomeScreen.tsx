@@ -1,9 +1,9 @@
-import { Header } from '../components/layout/Header'
+import { useEffect } from 'react'
 import { TaskList } from '../components/tasks/TaskList'
-import { VoiceButton } from '../components/voice/VoiceButton'
 import { useTasks } from '../hooks/useTasks'
 import { useVoiceOutput } from '../hooks/useVoiceOutput'
-import { IconVolume, IconVolumeOff, IconAlertTriangle, IconSun } from '../components/ui/Icons'
+import { IconVolume, IconVolumeOff, IconAlertTriangle, IconCheck, IconClock } from '../components/ui/Icons'
+import { seedSampleTasks } from '../lib/seed'
 
 function getGreeting(): string {
   const hour = new Date().getHours()
@@ -12,12 +12,30 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
+function getFormattedDate(): string {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 export function HomeScreen() {
-  const { todayTasks, overdueTasks, loading, complete, uncomplete } = useTasks()
+  const { tasks, todayTasks, overdueTasks, loading, complete, uncomplete, add, refresh } = useTasks()
   const { speak, isSpeaking, stop } = useVoiceOutput()
   const name = localStorage.getItem('vinatask-name') || ''
 
-  const pendingCount = todayTasks.filter(t => t.status !== 'completed').length
+  const pendingToday = todayTasks.filter(t => t.status !== 'completed')
+  const completedToday = todayTasks.filter(t => t.status === 'completed')
+  const totalActive = tasks.filter(t => t.status !== 'completed').length
+
+  // Seed sample tasks on first ever load
+  useEffect(() => {
+    if (!loading && tasks.length === 0 && !localStorage.getItem('vinatask-seeded')) {
+      localStorage.setItem('vinatask-seeded', '1')
+      seedSampleTasks(add).then(() => refresh())
+    }
+  }, [loading, tasks.length, add, refresh])
 
   const readTasks = () => {
     if (isSpeaking) { stop(); return }
@@ -42,69 +60,105 @@ export function HomeScreen() {
 
   return (
     <div className="min-h-full">
-      <Header title="VinaTask" />
+      {/* Header area */}
+      <div className="px-6 pt-6 pb-4">
+        <p className="text-vine-300 text-sm font-medium">{getFormattedDate()}</p>
+        <h1 className="text-2xl font-bold text-vine-800 mt-1">
+          {getGreeting()}{name ? `, ${name}` : ''}
+        </h1>
+      </div>
 
-      {/* Greeting section */}
-      <div className="px-5 pt-5 pb-3">
-        <div className="flex items-center gap-2 mb-1">
-          <IconSun size={18} className="text-vine-300" />
-          <p className="text-vine-500 text-base font-medium">
-            {getGreeting()}{name ? `, ${name}` : ''}.
-          </p>
+      {/* Stats row */}
+      <div className="px-5 pb-5">
+        <div className="grid grid-cols-3 gap-3">
+          <StatCard
+            value={pendingToday.length}
+            label="Due Today"
+            color="#8B6914"
+            icon={<IconClock size={16} className="text-vine-300" />}
+          />
+          <StatCard
+            value={overdueTasks.length}
+            label="Overdue"
+            color="#dc2626"
+            icon={<IconAlertTriangle size={16} className="text-red-300" />}
+          />
+          <StatCard
+            value={completedToday.length}
+            label="Done Today"
+            color="#059669"
+            icon={<IconCheck size={16} className="text-green-300" />}
+          />
         </div>
-        <p className="text-vine-400 text-sm pl-7">
-          {pendingCount === 0
-            ? 'No tasks for today. Enjoy your day!'
-            : `${pendingCount} task${pendingCount > 1 ? 's' : ''} on your plate today.`
-          }
-        </p>
       </div>
 
       {/* Overdue banner */}
       {overdueTasks.length > 0 && (
-        <div className="mx-4 mb-3 p-3.5 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-            <IconAlertTriangle size={16} className="text-red-500" />
+        <div className="mx-5 mb-5 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+            <IconAlertTriangle size={20} className="text-red-500" />
           </div>
-          <div>
-            <p className="text-red-700 font-semibold text-sm">
+          <div className="flex-1">
+            <p className="text-red-700 font-bold text-sm">
               {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}
             </p>
-            <p className="text-red-400 text-xs">
-              These need your attention
+            <p className="text-red-400 text-xs mt-0.5">
+              These need your attention right away
             </p>
           </div>
         </div>
       )}
 
-      {/* Read tasks button */}
-      <div className="px-4 mb-4">
+      {/* Read aloud */}
+      <div className="px-5 mb-5">
         <button
           onClick={readTasks}
-          className="w-full py-3 rounded-xl bg-white border border-vine-200 text-vine-600 font-medium text-sm flex items-center justify-center gap-2.5 active:bg-vine-50 transition-all hover:border-vine-300"
+          className="w-full py-3.5 rounded-2xl bg-white text-vine-600 font-semibold text-sm flex items-center justify-center gap-2.5 active:bg-vine-50 transition-all"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04)' }}
         >
           {isSpeaking ? (
-            <>
-              <IconVolumeOff size={18} />
-              Stop Reading
-            </>
+            <><IconVolumeOff size={18} /> Stop Reading</>
           ) : (
-            <>
-              <IconVolume size={18} />
-              Read My Tasks
-            </>
+            <><IconVolume size={18} /> Read My Tasks Aloud</>
           )}
         </button>
+      </div>
+
+      {/* Task list */}
+      <div className="mb-2">
+        <div className="px-5 mb-1">
+          <h2 className="text-base font-bold text-vine-700">
+            Today's Tasks
+            {totalActive > 0 && (
+              <span className="text-vine-300 font-normal text-sm ml-2">
+                {totalActive} total active
+              </span>
+            )}
+          </h2>
+        </div>
       </div>
 
       <TaskList
         tasks={todayTasks}
         onComplete={complete}
         onUncomplete={uncomplete}
-        emptyMessage="No tasks for today. Tap the mic to add one!"
+        emptyMessage="Nothing due today. Enjoy the calm!"
       />
+    </div>
+  )
+}
 
-      <VoiceButton />
+function StatCard({ value, label, color, icon }: {
+  value: number
+  label: string
+  color: string
+  icon: React.ReactNode
+}) {
+  return (
+    <div className="bg-white rounded-2xl p-3.5 text-center" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+      <div className="flex justify-center mb-1.5">{icon}</div>
+      <p className="text-2xl font-bold" style={{ color }}>{value}</p>
+      <p className="text-[10px] text-vine-400 font-semibold uppercase tracking-wide mt-0.5">{label}</p>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { TaskCard } from './TaskCard'
-import { IconGrape } from '../ui/Icons'
+import { IconGrape, IconMic } from '../ui/Icons'
 import type { Task } from '../../types'
 
 interface TaskListProps {
@@ -12,13 +12,18 @@ interface TaskListProps {
 export function TaskList({ tasks, onComplete, onUncomplete, emptyMessage }: TaskListProps) {
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6">
-        <div className="w-16 h-16 rounded-full bg-vine-100 flex items-center justify-center mb-4">
-          <IconGrape size={28} className="text-vine-400" />
+      <div className="flex flex-col items-center justify-center py-24 px-8">
+        <div className="w-20 h-20 rounded-2xl bg-vine-100/80 flex items-center justify-center mb-5">
+          <IconGrape size={36} className="text-vine-300" />
         </div>
-        <p className="text-vine-400 text-center text-sm leading-relaxed">
-          {emptyMessage || 'No tasks yet.'}
+        <p className="text-vine-500 text-center text-base font-medium mb-1">No tasks here</p>
+        <p className="text-vine-300 text-center text-sm leading-relaxed mb-6">
+          {emptyMessage || 'Your task list is empty.'}
         </p>
+        <div className="flex items-center gap-2 text-vine-400 text-xs">
+          <IconMic size={14} />
+          <span>Tap the + button or use voice to add a task</span>
+        </div>
       </div>
     )
   }
@@ -28,15 +33,15 @@ export function TaskList({ tasks, onComplete, onUncomplete, emptyMessage }: Task
   const completed = tasks.filter(t => t.status === 'completed')
 
   return (
-    <div className="px-4 space-y-4 pb-4">
+    <div className="px-5 space-y-6 pb-6">
       {overdue.length > 0 && (
-        <Section label="Overdue" tasks={overdue} onComplete={onComplete} onUncomplete={onUncomplete} />
+        <Section label={`Overdue (${overdue.length})`} tasks={overdue} onComplete={onComplete} onUncomplete={onUncomplete} />
       )}
       {pending.length > 0 && (
-        <Section label="Pending" tasks={pending} onComplete={onComplete} onUncomplete={onUncomplete} />
+        <Section label={`Upcoming (${pending.length})`} tasks={pending} onComplete={onComplete} onUncomplete={onUncomplete} />
       )}
       {completed.length > 0 && (
-        <Section label="Completed" tasks={completed} onComplete={onComplete} onUncomplete={onUncomplete} />
+        <Section label={`Done (${completed.length})`} tasks={completed} onComplete={onComplete} onUncomplete={onUncomplete} />
       )}
     </div>
   )
@@ -50,8 +55,8 @@ function Section({ label, tasks, onComplete, onUncomplete }: {
 }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold text-vine-400 uppercase tracking-widest mb-2 px-1">{label}</p>
-      <div className="space-y-2">
+      <p className="text-[11px] font-bold text-vine-400 uppercase tracking-[0.1em] mb-3">{label}</p>
+      <div className="space-y-3">
         {tasks.map(task => (
           <TaskCard key={task.id} task={task} onComplete={onComplete} onUncomplete={onUncomplete} />
         ))}
