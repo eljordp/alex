@@ -12,7 +12,7 @@ export function VoiceButton({ inline }: VoiceButtonProps) {
   const navigate = useNavigate()
   const [showOverlay, setShowOverlay] = useState(false)
 
-  const { start, stop, transcript, isListening, isSupported } = useVoiceInput({
+  const { start, stop, cancel, transcript, isListening, isSupported } = useVoiceInput({
     onResult: (text) => {
       setShowOverlay(false)
       const parsed = parseVoiceInput(text)
@@ -37,7 +37,7 @@ export function VoiceButton({ inline }: VoiceButtonProps) {
       return
     }
     if (isListening) {
-      stop()
+      cancel()
       setShowOverlay(false)
     } else {
       start()
@@ -61,7 +61,14 @@ export function VoiceButton({ inline }: VoiceButtonProps) {
           {isListening ? 'Tap to stop' : 'Start speaking'}
         </button>
 
-        {showOverlay && <VoiceOverlay isListening={isListening} transcript={transcript} stop={stop} setShowOverlay={setShowOverlay} />}
+        {showOverlay && (
+          <VoiceOverlay
+            isListening={isListening}
+            transcript={transcript}
+            onDone={() => stop()}
+            onCancel={() => { cancel(); setShowOverlay(false) }}
+          />
+        )}
       </>
     )
   }
@@ -70,11 +77,11 @@ export function VoiceButton({ inline }: VoiceButtonProps) {
   return null
 }
 
-function VoiceOverlay({ isListening, transcript, stop, setShowOverlay }: {
+function VoiceOverlay({ isListening, transcript, onDone, onCancel }: {
   isListening: boolean
   transcript: string
-  stop: () => void
-  setShowOverlay: (v: boolean) => void
+  onDone: () => void
+  onCancel: () => void
 }) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-6 animate-fade-in">
@@ -94,7 +101,7 @@ function VoiceOverlay({ isListening, transcript, stop, setShowOverlay }: {
           {isListening ? 'Listening...' : 'Processing...'}
         </p>
         <p className="text-vine-400 text-sm mb-5">
-          {isListening ? 'Speak naturally about your task' : 'Understanding your request'}
+          {isListening ? 'Take your time — tap Done when finished' : 'Understanding your request'}
         </p>
 
         {transcript && (
@@ -107,7 +114,7 @@ function VoiceOverlay({ isListening, transcript, stop, setShowOverlay }: {
 
         <div className="flex gap-3">
           <button
-            onClick={() => { stop(); setShowOverlay(false) }}
+            onClick={onCancel}
             className="flex-1 py-3 rounded-xl bg-vine-100 text-vine-600 font-medium flex items-center justify-center gap-2 active:bg-vine-200"
           >
             <IconX size={16} />
@@ -115,7 +122,7 @@ function VoiceOverlay({ isListening, transcript, stop, setShowOverlay }: {
           </button>
           {transcript && (
             <button
-              onClick={() => { stop() }}
+              onClick={onDone}
               className="flex-1 py-3 rounded-xl bg-vine-700 text-white font-medium flex items-center justify-center gap-2 active:bg-vine-800"
             >
               <IconCheck size={16} />
